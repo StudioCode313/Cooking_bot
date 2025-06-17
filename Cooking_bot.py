@@ -5,12 +5,17 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 bot = telebot.TeleBot("7553369898:AAGCyBP7BQ6Oyfo7mWVCpbnWzEbR06IFw-0")
 client = OpenAI(
     base_url= "https://openrouter.ai/api/v1",
-    api_key= "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",
+    api_key= "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",
 )
 user_id_chanels = [-1002267991061]
 user_has_joined = {}
 name_chanel = ["studio_code_313"]
-user_id = ""
+stopchat = {}
+stop_text = """شما گزینه ای برای استفاده از بات انتخاب نکردید 😕
+لطفا /start رو وارد کنید و یکی از گزینه های زیر را انتخاب کنید🤗❤️
+حرف زدن راجب غذا💬🍖
+دستور پخت📜🍲
+پیشنهاد غذا با موادت👨‍🍳🍳"""
 # بررسی عضویت کاربر در کانال
 def check_all_channels(user_id):
     for ch in user_id_chanels:
@@ -37,6 +42,37 @@ def is_admin(user_id):
 
 # print(response.choices[0].message.content)
 
+def start_chef_by_id (message, user_id):
+    text = """
+🍽️ به ربات شِف کوچولو خوش اومدی!
+
+👨‍🍳 اینجا جاییه که با چند تا ماده‌ی ساده، می‌تونی کلی غذای خوشمزه کشف کنی!
+
+سه تا کار می‌تونم برات انجام بدم:
+
+1️⃣ مواد غذایی داری؟ بگو چی داری، من بهت می‌گم چی می‌تونی باهاش درست کنی.
+2️⃣ یه غذا تو ذهنت هست؟ اسمشو بهم بگو، منم قدم به قدم طرز تهیه‌شو می‌گم.
+3️⃣ اطلاعات عمومیت راجب غذا کمه؟ بهم بگو راجب هر غذا چی میخوای بدونی تا بهت بگم.
+🍅🥔🍳🥦 فرقی نمی‌کنه چند تا ماده داری، مهم اینه که دست‌پختت قراره خوشمزه بشه!
+
+حالا بگو ببینم با چی شروع می‌کنیم؟ 😋"""
+    if user_has_joined.get(user_id, False):
+       markup = InlineKeyboardMarkup()
+       btn1 = InlineKeyboardButton(text= "پیشنهاد غذا با موادت👨‍🍳🍳", callback_data="food_offer")
+       btn2 = InlineKeyboardButton(text= "دستور پخت📜🍲", callback_data="recipe")
+       btn3 = InlineKeyboardButton(text="حرف زدن راجب غذا💬🍖", callback_data="talking")
+       markup.add(btn1, btn2)
+       markup.add(btn3)
+       bot.send_message(message.chat.id, text, reply_markup=markup)
+    else:
+        markup = InlineKeyboardMarkup()
+        for chanel in name_chanel:
+            btn = InlineKeyboardButton(text=chanel, url=f"https://t.me/{chanel}")
+            markup.add(btn)
+        join_btn = InlineKeyboardButton(text="عضو شدم.", callback_data="join")
+        markup.add(join_btn)
+        bot.send_message(message.chat.id, "لطفاً برای ادامه و کار با ربات، ابتدا در کانال زیر عضو شو:", reply_markup=markup)
+
 
 @bot.message_handler(commands=["admin_panel"])
 def adminpanel(message):
@@ -53,39 +89,12 @@ def adminpanel(message):
 
 @bot.message_handler(commands=["start"])
 def start_chef (message):
-    print(user_id)
-    text = """
-🍽️ به ربات شِف کوچولو خوش اومدی!
+    start_chef_by_id(message, message.from_user.id)
 
-👨‍🍳 اینجا جاییه که با چند تا ماده‌ی ساده، می‌تونی کلی غذای خوشمزه کشف کنی!
-
-سه تا کار می‌تونم برات انجام بدم:
-
-1️⃣ مواد غذایی داری؟ بگو چی داری، من بهت می‌گم چی می‌تونی باهاش درست کنی.
-2️⃣ یه غذا تو ذهنت هست؟ اسمشو بهم بگو، منم قدم به قدم طرز تهیه‌شو می‌گم.
-3️⃣ اطلاعات عمومیت راجب غذا کمه؟ بهم بگو راجب هر غذا چی میخوای بدونی تا بهت بگم.
-🍅🥔🍳🥦 فرقی نمی‌کنه چند تا ماده داری، مهم اینه که دست‌پختت قراره خوشمزه بشه!
-
-حالا بگو ببینم با چی شروع می‌کنیم؟ 😋"""
-    if user_has_joined.get(user_id, True):
-       markup = InlineKeyboardMarkup()
-       btn1 = InlineKeyboardButton(text= "پیشنهاد غذا با موادت👨‍🍳🍳", callback_data="food_offer")
-       btn2 = InlineKeyboardButton(text= "دستور پخت📜🍲", callback_data="recipe")
-       btn3 = InlineKeyboardButton(text="حرف زدن راجب غذا💬🍖", callback_data="talking")
-       markup.add(btn1, btn2)
-       markup.add(btn3)
-       bot.send_message(message.chat.id, text, reply_markup=markup)
-    else:
-        markup = InlineKeyboardMarkup()
-        for chanel in name_chanel:
-            btn = InlineKeyboardButton(text=chanel.replace("@", " "), url=f"https://t.me/{chanel.replace("@", "")}")
-            markup.add(btn)
-        join_btn = InlineKeyboardButton(text="عضو شدم.", callback_data="join")
-        markup.add(join_btn)
-        bot.send_message(message.chat.id, "لطفاً برای ادامه و کار با ربات، ابتدا در کانال زیر عضو شو:", reply_markup=markup)
 
 @bot.callback_query_handler(func=lambda call: True)
 def handle_callback(call):
+    user_id = call.from_user.id
     text = """🍽️ حرف بزن با باتِ شِف کوچولو!
 
 تو این قسمت می‌تونی هرچی دلت خواست درباره غذا بپرسی یا گپ بزنی!
@@ -109,23 +118,63 @@ def handle_callback(call):
             bot.delete_message(call.message.chat.id, call.message.message_id)
             user_has_joined[user_id] = True
             print(f"[DEBUG] user_has_joined[{user_id}] = {user_has_joined[user_id]}")
-            start_chef(call.message)
+            start_chef_by_id(call.message, user_id)
         else:
             bot.send_message(call.message.chat.id, "لطفا ابتدا در تمام چنل ها عضو بشید.")
     elif call.data == "talking":
         bot.delete_message(call.message.chat.id, call.message.message_id)
+        stopchat[user_id] = False
         bot.send_message(call.message.chat.id, text)
         bot.register_next_step_handler(call.message, talking)
     elif call.data == "recipe":
         bot.delete_message(call.message.chat.id, call.message.message_id)
+        stopchat[user_id] = False
         bot.send_message(call.message.chat.id, text2)
         bot.register_next_step_handler(call.message, recipe)
     elif call.data == "food_offer":
         bot.delete_message(call.message.chat.id, call.message.message_id)
+        stopchat[user_id] = False
         bot.send_message(call.message.chat.id, text2)
         bot.register_next_step_handler(call.message, food_offer)
+    elif call.data == "stop_chat":
+        stopchat[user_id] = True
+        stop_chat(call.message)
+    elif call.data == "ad_chanel":
+        bot.delete_message(call.message.chat.id, call.message.meaage_id)
+        bot.send_message(call.message.chat.id, "وارد کنید🌐🆔[@]لطفا یوزر نیم چنل خود رو بدون")
+        bot.register_next_step_handler(call.message, ad_chanel)
+    elif call.data == "remove_adchanel":
+        bot.delete_message(call.message.chat.id, call.message.meaage_id)
+        bot.send_message(call.message.chat.id, "وارد کنید🌐🆔[@]لطفا یوزر نیم چنل خود رو بدون")
+        bot.register_next_step_handler(call.message, remove_adchanel)
 
+def remove_adchanel(message):
+    text = message.text
+    name_chanel.remove(text)
+    bot.send_message(message.chat.id, "یوزر نیم چنل با موفقیت حذف شد😄👍\nحالا نوبت اینه یوزر ایدی چنله که با فرمت [-1002243677] ارسال کنید🌐🆔")
+    bot.register_next_step_handler(message, remove_adchanel2)
+
+def remove_adchanel2(message):
+    text = message.text
+    user_id_chanels.remove(text)
+    bot.send_message(message.chat.id, "یوزر ایدی چنل هم با موفقیت حذف شد😄👍")
+
+def ad_chanel(message):
+    text = message.text
+    name_chanel.append(text)
+    bot.send_message(message.chat.id, "یوزر نیم چنل با موفقیت اضافه شد😄👍\nحالا نوبت اینه یوزر ایدی چنله که با فرمت [-1002243677] ارسال کنید🌐🆔")
+    bot.register_next_step_handler(message, ad_chanel2)
+
+def ad_chanel2(message):
+    text = message.text
+    user_id_chanels.append(text)
+    bot.send_message(message.chat.id, "یوزر ایدی چنل هم با موفقیت وارد شد😄👍")
+
+def stop_chat(message):
+    bot.send_message(message.chat.id, "خوشحال شدم از حرف زدن باهات😄")
 def food_offer(message):
+    global stop_text
+    user_id = message.from_user.id
     text = message.text
     system_text = """تو یه اشپز حرفه ای هستی که اسمت شِف کوچولو هست؛
 فقط به سوالات مربوط به پیشنهاد دادن غذا جواب بده 
@@ -143,18 +192,23 @@ def food_offer(message):
         {"role": "system", "content": system_text},
         {"role": "user", "content": text}
         ]
-    if text == "کافیه":
-        bot.send_message(message.chat.id, "خوشحال شدم از حرف زدن باهات😄")
+    if stopchat.get(user_id, False):
+        bot.send_message(message.chat.id, stop_text)
     else:
         response = client.chat.completions.create(
      model="deepseek/deepseek-r1-0528:free",
      messages=messagee,
      temperature= 0.5
         )
-        bot.send_message(message.chat.id, response.choices[0].message.content)
+        markup = InlineKeyboardMarkup()
+        btn2 = InlineKeyboardButton("پایان چت با شف کوچولو🔚❌", callback_data="stop_chat")
+        markup.add(btn2)
+        bot.send_message(message.chat.id, response.choices[0].message.content, reply_markup=markup)
         bot.register_next_step_handler(message, food_offer)
 
 def talking(message):
+    global stop_text
+    user_id = message.from_user.id
     text = message.text
     system_text = """تو یه آشپز حرفه ای هستی که اسمت شِف کوچولو هست؛
 فقط به سوالات عمومی اشپزی جواب بده و به سوالات مربوغبه دستور پخت و یا پیشنهاد غذا پاسخ نده برای مثال:
@@ -168,18 +222,23 @@ def talking(message):
         {"role": "system", "content": system_text},
         {"role": "user", "content": text}
         ]
-    if text == "کافیه":
-        bot.send_message(message.chat.id, "خوشحال شدم از حرف زدن باهات😄")
+    if stopchat.get(user_id, False):
+        bot.send_message(message.chat.id, stop_text)
     else:
         response = client.chat.completions.create(
      model="deepseek/deepseek-r1-0528:free",
      messages=messagee,
      temperature= 0.7
         )
-        bot.send_message(message.chat.id, response.choices[0].message.content)
+        markup = InlineKeyboardMarkup()
+        btn2 = InlineKeyboardButton("پایان چت با شف کوچولو🔚❌", callback_data="stop_chat")
+        markup.add(btn2)
+        bot.send_message(message.chat.id, response.choices[0].message.content, reply_markup=markup)
         bot.register_next_step_handler(message, talking)
 
 def recipe(message):
+    global stop_text
+    user_id = message.from_user.id
     text = message.text
     system_text = """تو یه آشپز حرفه ای هستی که اسمت شِف کوچولو هست؛
 فقط به سوالات مربوط به دستور پخت جواب بده
@@ -196,15 +255,18 @@ def recipe(message):
         {"role": "system", "content": system_text},
         {"role": "user", "content": text}
         ]
-    if text == "کافیه":
-        bot.send_message(message.chat.id, "خوشحال شدم از حرف زدن باهات😄")
+    if stopchat.get(user_id, False):
+        bot.send_message(message.chat.id, stop_text)
     else:
         response = client.chat.completions.create(
      model="deepseek/deepseek-r1-0528:free",
      messages=messagee,
      temperature= 0.4
         )
-        bot.send_message(message.chat.id, response.choices[0].message.content)
+        markup = InlineKeyboardMarkup()
+        btn2 = InlineKeyboardButton("پایان چت با شف کوچولو🔚❌", callback_data="stop_chat")
+        markup.add(btn2)
+        bot.send_message(message.chat.id, response.choices[0].message.content, reply_markup=markup)
         bot.register_next_step_handler(message, recipe)
 print("bot is ready")
 
